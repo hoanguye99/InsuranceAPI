@@ -1,7 +1,7 @@
 import fs from "fs";
 import dotenv from 'dotenv';
 dotenv.config();
-export const PORT = 30001 || "";
+export const PORT = process.env.SM_BE_PORT || "8080";
 // export const HOST = "149.28.229.226";
 // export const PORTDB = "6996";
 // export const USER = "sult";
