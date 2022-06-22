@@ -171,6 +171,7 @@ export async function updateIns(insId, typeCode, ownerName, plate, startDate, en
     status = status === undefined ? null : status;
     startDate= startDate === undefined ? null : startDate;
     endDate= endDate === undefined ? null : endDate;
+    address= address === undefined ? null : address;
     let params = [insId, typeCode, ownerName, plate, startDate, endDate, engineNo, chassisNo, status, address];
     let conn;
     let ret = undefined;
