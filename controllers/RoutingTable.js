@@ -94,8 +94,8 @@ export async function getListInsType() {
 
         let insTypes = [];
         for (let r of res) {
-            let { id, code, name, description, totalAmount } = r;
-            insTypes.push({ id, code, name, description, totalAmount });
+            let { id, code, name, description, totalAmount, image } = r;
+            insTypes.push({ id, code, name, description, totalAmount, image });
         }
         ret = { statusCode: Ok, data: { insTypes } };
     } catch (e) {
