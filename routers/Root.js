@@ -1,6 +1,6 @@
 import { Router } from "express";
 // import { Ok } from "../configs/http-status-codes.js";
-import { checkRefreshToken, createIns, getListIns, getListInsType, login, makeOrder, updateIns } from "../controllers/RoutingTable.js";
+import { checkRefreshToken, createIns, getListIns, getListInsType, login, createOrder, addOrder, updateIns, getOrderDetail } from "../controllers/RoutingTable.js";
 import { makeOrderCode } from "../util/MyCrypto.js";
 import { parseDate } from "../util/UtilsValidate.js";
 // import { parseDate } from "../util/UtilsValidate.js";
@@ -55,7 +55,7 @@ router.put("/ins/:insId", validateToken, async (req, res, next) => {
     next(data);
 });
 router.delete("/ins/:insId", validateToken, async (req, res, next) => {
-    let {insId} = req.params;    
+    let {insId} = req.params;
                             //(insId, typeCode, ownerName, plate, startDate, endDate, engineNo, chassisNo, status, address)
     let data = await updateIns(insId, null,null,null,null,null,null,null,0,null);
     next(data);
@@ -65,19 +65,29 @@ router.delete("/ins/:insId", validateToken, async (req, res, next) => {
 router.post("/ins/order/", validateToken, async (req, res, next) => {
     let {userName} = req.payload;
     let productType = 'INS';
-    let {insId, amount,orderId} = req.body;
-    let orderCode = undefined;
-    if(!orderId) {
-        orderCode = makeOrderCode(userName);                            
-    }
-    let data = await makeOrder(userName, orderCode, productType, insId, amount,orderId);
-    next(data);
-});
-router.delete("/ins/order/:orderId/detail/", validateToken, async (req, res, next) => {
-    let {userName} = req.payload;
-    let {orderId} = req.params;
-    let {insId, amount} = req.body;                       
+    let {insId, amount} = req.body;
+    let orderCode = makeOrderCode(userName);
     let data = await createOrder(userName, orderCode, productType, insId, amount);
     next(data);
+}
+);
+
+router.put("/ins/order/:orderId", validateToken, async (req, res, next) => {
+  let {orderId} = req.params;
+  let productType = 'INS';
+  let {insId, amount} = req.body;
+  // let data = await makeOrder(userName, orderCode, productType, insId, amount,orderId);
+  let data = await addOrder(orderId, productType, insId, amount);
+  next(data);
 });
+
+router.get("/ins/order/:orderId", validateToken, async (req, res, next) => {
+  let {orderId} = req.params;
+  let data = await getOrderDetail(orderId);
+  next(data);
+});
+
+// router.delete("/ins/order/:orderId/detail/", validateToken, async (req, res, next) => {
+//   next(data);
+// });
 export default router;

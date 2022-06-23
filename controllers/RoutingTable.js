@@ -242,16 +242,8 @@ export async function applyIns(insId, applyBy) {
     }
     return ret;
 }
-///
-export async function makeOrder(userName, orderCode, productType, insId, amount,orderId) {
-    if(orderId) {
-        return await addOrder(orderId, productType, insId, amount);
-    } else {
-        return await createOrder(userName, orderCode, productType, insId, amount);
-    }
-}
 
-async function createOrder(userName, orderCode, productType, insId, amount) {
+export async function createOrder(userName, orderCode, productType, insId, amount) {
     let sql = "CALL createOrder(?,?,?,?,?)";
     let params = [userName, orderCode, productType, insId, amount];
     let conn;
@@ -274,6 +266,7 @@ async function createOrder(userName, orderCode, productType, insId, amount) {
     }
     return ret;
 }
+
 export async function addOrder(orderId, productType, insId, amount) {
     let sql = "CALL addOrderDetail(?,?,?,?)";
     let params = [orderId, productType, insId, amount];
@@ -283,7 +276,7 @@ export async function addOrder(orderId, productType, insId, amount) {
         conn = await connection.getConnection();
         const result = await conn.query(sql, params);
         let { res } = result[0][0];
-        if (res == 1) {
+        if (res !== 0) {
             ret = { statusCode: Ok, data: { orderDetailId: toJsonRemoveBigint(res), orderId, productType, insId, amount} };
         } else {
             ret = { statusCode: BadRequest, error: 'ERROR', description: 'Error!' };
@@ -297,6 +290,8 @@ export async function addOrder(orderId, productType, insId, amount) {
     }
     return ret;
 }
+
+// call whenvever client hits Purchase Button
 export async function confirmOrder(userId,orderId, invoiceCode) {
     let sql = "CALL confirmOrder(?,?,?)";
     let params = [userId,orderId, invoiceCode];
@@ -321,44 +316,43 @@ export async function confirmOrder(userId,orderId, invoiceCode) {
     return ret;
 }
 
-export async function getOrder(orderId) {
-    let sql = "CALL addOrderDetail(?,?,?,?)";
-    let params = [orderId, productType, insId, amount];
-    let conn;
-    let ret = undefined;
-    try {
-        conn = await connection.getConnection();
-        const result = await conn.query(sql, params);
-        let { userName,displayName,createdDate,orderCode } = result[0][0];
-        let details = await getOrderDetail(orderId);
-        ret = { statusCode: Ok, data: {  userName,displayName,createdDate,orderCode , details} };
+// export async function getOrder(orderId) {
+//     let sql = "CALL addOrderDetail(?,?,?,?)";
+//     let params = [orderId, productType, insId, amount];
+//     let conn;
+//     let ret = undefined;
+//     try {
+//         conn = await connection.getConnection();
+//         const result = await conn.query(sql, params);
+//         let { userName,displayName,createdDate,orderCode } = result[0][0];
+//         let details = await getOrderDetail(orderId);
+//         ret = { statusCode: Ok, data: {  userName,displayName,createdDate,orderCode , details} };
         
-    } catch (e) {
-        myLogger.info("updateIns e: %o", e);
-        ret = { statusCode: SystemError, error: 'ERROR', description: 'System busy!' };
+//     } catch (e) {
+//         myLogger.info("updateIns e: %o", e);
+//         ret = { statusCode: SystemError, error: 'ERROR', description: 'System busy!' };
 
-    } finally {
-        if (conn) conn.end();
-    }
-    return ret;
-}
-async function getOrderDetail(orderId) {
+//     } finally {
+//         if (conn) conn.end();
+//     }
+//     return ret;
+// }
+
+export async function getOrderDetail(orderId) {
     let sql = "CALL getOrderDetail(?)";
     let params = [orderId];
     let conn;
-    let ret = undefined;
     let details = [];
     try {
         conn = await connection.getConnection();
         const result = await conn.query(sql, params);
-        let ds = result[0];        
+        let ds = result[0];
         for(let d of ds) {
             let {createdDate, productType,objectId,amount} = d;
             details.push({createdDate, productType,insId:objectId,amount});
-        }        
+        }
     } catch (e) {
         myLogger.info("updateIns e: %o", e);
-
     } finally {
         if (conn) conn.end();
     }
