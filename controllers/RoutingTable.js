@@ -343,18 +343,21 @@ export async function getOrderDetail(orderId) {
     let params = [orderId];
     let conn;
     let details = [];
+    let ret = undefined;
     try {
         conn = await connection.getConnection();
         const result = await conn.query(sql, params);
         let ds = result[0];
         for(let d of ds) {
             let {createdDate, productType,objectId,amount} = d;
-            details.push({createdDate, productType,insId:objectId,amount});
+            details.push({createdDate, productType, insId: toJsonRemoveBigint(objectId) , amount: toJsonRemoveBigint(amount)});
         }
+        ret = { statusCode: Ok, data: { details }};
     } catch (e) {
         myLogger.info("updateIns e: %o", e);
+        ret = { statusCode: SystemError, error: 'ERROR', description: 'System busy!' };
     } finally {
         if (conn) conn.end();
     }
-    return details;        
+    return ret;        
 }
