@@ -252,7 +252,7 @@ export async function createOrder(userName, orderCode, productType, insId, amoun
         conn = await connection.getConnection();
         const result = await conn.query(sql, params);
         let { res } = result[0][0];
-        if (res == 1) {
+        if (res !== 0) {
             ret = { statusCode: Ok, data: { orderId: toJsonRemoveBigint(res), userName, orderCode, productType, insId, amount } };
         } else {
             ret = { statusCode: BadRequest, error: 'ERROR', description: 'Error!' };
@@ -291,6 +291,112 @@ export async function addOrder(orderId, productType, insId, amount) {
     return ret;
 }
 
+export async function deleteOrder(id) {
+    let sql = "CALL deleteOrderDetail(?)";
+    let params = [id];
+    let conn;
+    let ret = undefined;
+    try {
+      conn = await connection.getConnection();
+      const result = await conn.query(sql, params);
+      let { res } = result[0][0];
+      if (res !== 0) {
+        ret = { statusCode: Ok, data: { id } };
+      } else {
+        ret = { statusCode: BadRequest, error: 'ERROR', description: 'id does not exist in database' };
+      }
+    } catch (e) {
+      myLogger.info("updateIns e: %o", e);
+      ret = { statusCode: SystemError, error: 'ERROR', description: 'System busy!' };
+      
+    } finally {
+        if (conn) conn.end();
+      }
+      return ret;
+    }
+    
+export async function deleteOrderAll(orderId) {
+  let sql = "CALL deleteOrderDetailAll(?)";
+  let params = [orderId];
+  let conn;
+  let ret = undefined;
+  try {
+      conn = await connection.getConnection();
+      const result = await conn.query(sql, params);
+      let { res } = result[0][0];
+      if (res !== 0) {
+          ret = { statusCode: Ok, data: { orderId } };
+      } else {
+          ret = { statusCode: BadRequest, error: 'ERROR', description: 'orderId does not exist in database' };
+      }
+  } catch (e) {
+      myLogger.info("updateIns e: %o", e);
+      ret = { statusCode: SystemError, error: 'ERROR', description: 'System busy!' };
+
+  } finally {
+      if (conn) conn.end();
+  }
+  return ret;
+}
+
+    
+export async function getOrderDetail(userName, orderId) {
+  let sql = "CALL getOrderDetail(?,?)";
+  let params = [userName, orderId];
+  let conn;
+  let details = [];
+  let ret = undefined;
+  try {
+    conn = await connection.getConnection();
+    const result = await conn.query(sql, params);
+    let ds = result[0];
+    for(let d of ds) {
+      let {id, createdDate, productType,objectId,amount} = d;
+      details.push({id : toJsonRemoveBigint(id), createdDate, productType, insId: toJsonRemoveBigint(objectId) , amount: toJsonRemoveBigint(amount)});
+    }
+    if (details.length !== 0) {
+      ret = { statusCode: Ok, data: { details }};
+    } else {
+      ret = { statusCode: BadRequest, error: 'ERROR', description: 'The user does not have this orderId!' };
+    }
+  } catch (e) {
+    myLogger.info("updateIns e: %o", e);
+    ret = { statusCode: SystemError, error: 'ERROR', description: 'System busy!' };
+  } finally {
+    if (conn) conn.end();
+  }
+  return ret;        
+}
+
+export async function getLatestOrderDetail(userName) {
+  let sql = "CALL getLatestOrderDetail(?)";
+  let params = [userName];
+  let conn;
+  let details = [];
+  let ret = undefined;
+  try {
+    conn = await connection.getConnection();
+    const result = await conn.query(sql, params);
+    let ds = result[0];
+    for(let d of ds) {
+      let {id, createdDate, productType,objectId,amount} = d;
+      details.push({id : toJsonRemoveBigint(id), createdDate, productType, insId: toJsonRemoveBigint(objectId) , amount: toJsonRemoveBigint(amount)});
+    }
+    if (details.length !== 0) {
+      ret = { statusCode: Ok, data: { details }};
+    } else {
+      ret = { statusCode: BadRequest, error: 'ERROR', description: 'The user have not created an order yet' };
+    }
+  } catch (e) {
+    myLogger.info("updateIns e: %o", e);
+    ret = { statusCode: SystemError, error: 'ERROR', description: 'System busy!' };
+  } finally {
+    if (conn) conn.end();
+  }
+  return ret;        
+}
+
+
 // call whenvever client hits Purchase Button
 export async function confirmOrder(userId,orderId, invoiceCode) {
     let sql = "CALL confirmOrder(?,?,?)";
@@ -314,50 +420,4 @@ export async function confirmOrder(userId,orderId, invoiceCode) {
         if (conn) conn.end();
     }
     return ret;
-}
-
-// export async function getOrder(orderId) {
-//     let sql = "CALL addOrderDetail(?,?,?,?)";
-//     let params = [orderId, productType, insId, amount];
-//     let conn;
-//     let ret = undefined;
-//     try {
-//         conn = await connection.getConnection();
-//         const result = await conn.query(sql, params);
-//         let { userName,displayName,createdDate,orderCode } = result[0][0];
-//         let details = await getOrderDetail(orderId);
-//         ret = { statusCode: Ok, data: {  userName,displayName,createdDate,orderCode , details} };
-        
-//     } catch (e) {
-//         myLogger.info("updateIns e: %o", e);
-//         ret = { statusCode: SystemError, error: 'ERROR', description: 'System busy!' };
-
-//     } finally {
-//         if (conn) conn.end();
-//     }
-//     return ret;
-// }
-
-export async function getOrderDetail(orderId) {
-    let sql = "CALL getOrderDetail(?)";
-    let params = [orderId];
-    let conn;
-    let details = [];
-    let ret = undefined;
-    try {
-        conn = await connection.getConnection();
-        const result = await conn.query(sql, params);
-        let ds = result[0];
-        for(let d of ds) {
-            let {createdDate, productType,objectId,amount} = d;
-            details.push({createdDate, productType, insId: toJsonRemoveBigint(objectId) , amount: toJsonRemoveBigint(amount)});
-        }
-        ret = { statusCode: Ok, data: { details }};
-    } catch (e) {
-        myLogger.info("updateIns e: %o", e);
-        ret = { statusCode: SystemError, error: 'ERROR', description: 'System busy!' };
-    } finally {
-        if (conn) conn.end();
-    }
-    return ret;        
 }

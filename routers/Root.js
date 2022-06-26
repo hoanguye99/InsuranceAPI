@@ -1,6 +1,6 @@
 import { Router } from "express";
 // import { Ok } from "../configs/http-status-codes.js";
-import { checkRefreshToken, createIns, getListIns, getListInsType, login, createOrder, addOrder, updateIns, getOrderDetail } from "../controllers/RoutingTable.js";
+import { checkRefreshToken, createIns, getListIns, getListInsType, login, createOrder, addOrder, updateIns, getOrderDetail, deleteOrder, deleteOrderAll, getLatestOrderDetail } from "../controllers/RoutingTable.js";
 import { makeOrderCode } from "../util/MyCrypto.js";
 import { parseDate } from "../util/UtilsValidate.js";
 // import { parseDate } from "../util/UtilsValidate.js";
@@ -42,6 +42,7 @@ router.post("/ins/", validateToken, async (req, res, next) => {
     let data = await createIns(body,userName,displayName);
     next(data);
 });
+
 router.put("/ins/:insId", validateToken, async (req, res, next) => {
     let {insId} = req.params;
     let {typeCode,ownerName,plate,startDate,endDate,engineNo,chassisNo,status,address} = req.body;
@@ -54,6 +55,7 @@ router.put("/ins/:insId", validateToken, async (req, res, next) => {
     let data = await updateIns(insId, typeCode,ownerName,plate,startDateD,endDateD,engineNo,chassisNo,status,address);
     next(data);
 });
+
 router.delete("/ins/:insId", validateToken, async (req, res, next) => {
     let {insId} = req.params;
                             //(insId, typeCode, ownerName, plate, startDate, endDate, engineNo, chassisNo, status, address)
@@ -81,9 +83,28 @@ router.put("/ins/order/:orderId", validateToken, async (req, res, next) => {
   next(data);
 });
 
-router.get("/ins/order/:orderId", validateToken, async (req, res, next) => {
+router.delete("/ins/order/items/:id", validateToken, async (req, res, next) => {
+  let {id} = req.params;
+  let data = await deleteOrder(id);
+  next(data);
+});
+
+router.delete("/ins/order/items/all/:orderId", validateToken, async (req, res, next) => {
   let {orderId} = req.params;
-  let data = await getOrderDetail(orderId);
+  let data = await deleteOrderAll(orderId);
+  next(data);
+});
+
+router.get("/ins/order/:orderId", validateToken, async (req, res, next) => {
+  let {userName} = req.payload;
+  let {orderId} = req.params;
+  let data = await getOrderDetail(userName, orderId);
+  next(data);
+});
+
+router.get("/ins/order/", validateToken, async (req, res, next) => {
+  let {userName} = req.payload;
+  let data = await getLatestOrderDetail(userName);
   next(data);
 });
 
