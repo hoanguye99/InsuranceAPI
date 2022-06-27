@@ -381,7 +381,7 @@ export async function getLatestOrderDetail(userName) {
     let orderId = null;
     for(let d of ds) {
       let {id, createdDate, productType,objectId,amount} = d;
-      orderId = d.orderId;
+      orderId = toJsonRemoveBigint(d.orderId);
       details.push({id : toJsonRemoveBigint(id), createdDate, productType, insId: toJsonRemoveBigint(objectId) , amount: toJsonRemoveBigint(amount)});
     }
     if (details.length !== 0) {
