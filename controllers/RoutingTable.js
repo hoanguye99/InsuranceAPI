@@ -378,12 +378,14 @@ export async function getLatestOrderDetail(userName) {
     conn = await connection.getConnection();
     const result = await conn.query(sql, params);
     let ds = result[0];
+    let orderId = null;
     for(let d of ds) {
-      let {id, orderId, createdDate, productType,objectId,amount} = d;
-      details.push({id : toJsonRemoveBigint(id), orderId: toJsonRemoveBigint(orderId), createdDate, productType, insId: toJsonRemoveBigint(objectId) , amount: toJsonRemoveBigint(amount)});
+      let {id, createdDate, productType,objectId,amount} = d;
+      orderId = d.orderId;
+      details.push({id : toJsonRemoveBigint(id), createdDate, productType, insId: toJsonRemoveBigint(objectId) , amount: toJsonRemoveBigint(amount)});
     }
     if (details.length !== 0) {
-      ret = { statusCode: Ok, data: { details }};
+      ret = { statusCode: Ok, data: { details, orderId }};
     } else {
       ret = { statusCode: BadRequest, error: 'ERROR', description: 'The user have not created an order yet' };
     }
