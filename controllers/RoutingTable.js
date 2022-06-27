@@ -379,8 +379,8 @@ export async function getLatestOrderDetail(userName) {
     const result = await conn.query(sql, params);
     let ds = result[0];
     for(let d of ds) {
-      let {id, createdDate, productType,objectId,amount} = d;
-      details.push({id : toJsonRemoveBigint(id), createdDate, productType, insId: toJsonRemoveBigint(objectId) , amount: toJsonRemoveBigint(amount)});
+      let {id, orderId, createdDate, productType,objectId,amount} = d;
+      details.push({id : toJsonRemoveBigint(id), orderId: toJsonRemoveBigint(orderId), createdDate, productType, insId: toJsonRemoveBigint(objectId) , amount: toJsonRemoveBigint(amount)});
     }
     if (details.length !== 0) {
       ret = { statusCode: Ok, data: { details }};
