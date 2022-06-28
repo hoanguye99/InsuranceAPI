@@ -400,16 +400,16 @@ export async function getLatestOrderDetail(userName) {
 
 
 // call whenvever client hits Purchase Button
-export async function confirmOrder(userId,orderId, invoiceCode) {
+export async function confirmOrder(userName,orderId, invoiceCode) {
     let sql = "CALL confirmOrder(?,?,?)";
-    let params = [userId,orderId, invoiceCode];
+    let params = [userName,orderId, invoiceCode];
     let conn;
     let ret = undefined;
     try {
         conn = await connection.getConnection();
         const result = await conn.query(sql, params);
         let { res } = result[0][0];
-        if (res == 1) {
+        if (res > 0) {
             ret = { statusCode: Ok, data: { invoiceId: toJsonRemoveBigint(res), orderId, invoiceCode} };
         } else {
             ret = { statusCode: BadRequest, error: 'ERROR', description: 'Error!' };

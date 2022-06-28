@@ -1,7 +1,7 @@
 import { Router } from "express";
 // import { Ok } from "../configs/http-status-codes.js";
-import { checkRefreshToken, createIns, getListIns, getListInsType, login, createOrder, addOrder, updateIns, getOrderDetail, deleteOrder, deleteOrderAll, getLatestOrderDetail } from "../controllers/RoutingTable.js";
-import { makeOrderCode } from "../util/MyCrypto.js";
+import { checkRefreshToken, createIns, getListIns, getListInsType, login, createOrder, addOrder, updateIns, getOrderDetail, deleteOrder, deleteOrderAll, getLatestOrderDetail, confirmOrder } from "../controllers/RoutingTable.js";
+import { makeOrderCode, makeInvoiceCode } from "../util/MyCrypto.js";
 import { parseDate } from "../util/UtilsValidate.js";
 // import { parseDate } from "../util/UtilsValidate.js";
 import { validateRefreshToken, validateToken } from "../util/Validate.js";
@@ -108,6 +108,13 @@ router.get("/ins/order/", validateToken, async (req, res, next) => {
   next(data);
 });
 
+router.post("/ins/order/confirm/:orderId", validateToken, async (req, res, next) => {
+  let {userName} = req.payload;
+  let {orderId} = req.params;
+  let invoiceCode = makeInvoiceCode(userName);
+  let data = await confirmOrder(userName,orderId, invoiceCode);
+  next(data);
+});
 // router.delete("/ins/order/:orderId/detail/", validateToken, async (req, res, next) => {
 //   next(data);
 // });
