@@ -408,9 +408,9 @@ export async function confirmOrder(userName,orderId, invoiceCode) {
     try {
         conn = await connection.getConnection();
         const result = await conn.query(sql, params);
-        let { res } = result[0][0];
+        let { res, amount } = result[0][0];
         if (res > 0) {
-            ret = { statusCode: Ok, data: { invoiceId: toJsonRemoveBigint(res), orderId, invoiceCode} };
+            ret = { statusCode: Ok, data: { invoiceId: toJsonRemoveBigint(res), orderId, invoiceCode, amount: toJsonRemoveBigint(amount)} };
         } else {
             ret = { statusCode: BadRequest, error: 'ERROR', description: 'Error!' };
         }
