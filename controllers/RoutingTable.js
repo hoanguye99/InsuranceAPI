@@ -23,13 +23,13 @@ export async function login(userName, password) {
     try {
         conn = await connection.getConnection();
         const result = await conn.query(sql, params);
-        let { res, displayName, role, email } = result[0][0];
+        let { res, id, displayName, role, email } = result[0][0];
 
         if (res == 1) {
-            let accessToken = genToken(userName, displayName, role, email);
+            let accessToken = genToken(id, userName, displayName, role, email);
             let refreshToken = genRefreshToken(userName, displayName);
             await updateRefreshToken(userName,refreshToken);
-            ret = { statusCode: Ok, data: { accessToken, refreshToken, displayName, role, email } };
+            ret = { statusCode: Ok, data: { accessToken, refreshToken, id, displayName, role, email } };
         } else {
             ret = { statusCode: Unauthorized, error: 'UNAUTHORIZED', description: 'userName or password is wrong!' };
         }
