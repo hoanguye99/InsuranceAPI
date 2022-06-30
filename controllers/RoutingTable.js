@@ -26,7 +26,7 @@ export async function login(userName, password) {
         let { res, id, displayName, role, email } = result[0][0];
 
         if (res == 1) {
-            let accessToken = genToken(id, userName, displayName, role, email);
+            let accessToken = genToken( userName, displayName, role, email);
             let refreshToken = genRefreshToken(userName, displayName);
             await updateRefreshToken(userName,refreshToken);
             ret = { statusCode: Ok, data: { accessToken, refreshToken, id, displayName, role, email } };
